@@ -4,7 +4,8 @@
 
 安装方法：pip install -U wxpy  
 repo地址：https://github.com/youfou/wxpy  
-文档：https://wxpy.readthedocs.io/
+文档：https://wxpy.readthedocs.io/  
+更多代码参考：https://gist.github.com/youfou/03c1e0204ac092f873730f51671ce0a8#file-wxpy_group-py-L381
 
 ## 实现功能
 1. 发送指定图片给指定好友。
