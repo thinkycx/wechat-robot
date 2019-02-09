@@ -43,7 +43,7 @@ class Wechat():
 					return u'{0}, 定制消息。\n > {1}'.format(msg.chat.name, msg.text)
 				if msg.chat.name not in self.__reply_once:
 					self.__reply_once.append(msg.chat.name)
-					return u'愿你2019猪事顺利，家人安康～'
+					return u'2019猪事顺利！'
 			# return u'{0}，你好！你发送的信息已经收到\n > {1}'.format(msg.chat.name, msg.text)
 
 			# 自动回复群聊消息
@@ -53,8 +53,6 @@ class Wechat():
 				if isinstance(msg.chat, Group) and not msg.is_at:
 					return
 				return u'新春快乐，祝身体健康，万事如意。'
-
-
 
 	def get_bot(self):
 		"""
@@ -114,7 +112,7 @@ class Wechat():
 
 	def send_text_to_friend(self, name, message, times=1, nap=0.5, debug=0):
 		"""
-		发送消息给指定的人，
+		发送消息给指定的人
 		:param name: 要发送的人，模糊匹配，可以搜索nickname或者是备注
 		:param message: 消息内容
 		:param times: 发送次数
@@ -134,9 +132,24 @@ class Wechat():
 				friend.send(message)
 			time.sleep(nap)
 
+	def send_text_to_all_friends(self, message, snap=3):
+		"""
+		群发短信
+		:param message:
+		:param snap:
+		:return:
+		"""
+		friends = self.__bot.friends()
+		for i in friends:
+			try:
+				i.send(message)
+			except Exception as e:
+				print(i), e ,"发送失败"
+			time.sleep(snap)
+
 	def scheduled_send(self, friend, time, message):
 		"""
-		定时发送消息给同学，如果收到回复发送邮件提醒。
+		定时发送消息给好友，如果收到回复发送邮件提醒。
 		:param friend:
 		:param time:
 		:param message:
@@ -145,32 +158,18 @@ class Wechat():
 		pass
 
 
-
-
-# class Robot(Wechat):
-# 	"""
-# 	robot 微信号
-# 	"""
-#
-# 	def __init__(self):
-# 		Wechat.__init__(self)
-
-
 def set_log():
+	# 设置log
 	log_format = "%(asctime)s - %(levelname)s - %(message)s"
 	date_format = "%m/%d/%Y %H:%M:%S %p"
 	logging.basicConfig(level=logging.INFO, format=log_format, datefmt=date_format)
-
-	# wechat = Wechat()
-	# bot = wechat.get_bot()
-	bot = Bot(cache_path=True)
-	black_list = ''
 
 
 
 def detect_deleted_friends():
 	# 发送消息给每一个人，以此来检测谁把你删除了。
 	wechat = Wechat()
+
 	wechat.sendall_image(debug=1)
 	wechat.send_to_file_helpder()
 
@@ -178,10 +177,11 @@ def detect_deleted_friends():
 if __name__ == '__main__':
 	set_log()
 
-	# 自动回复
+	# 登陆
 	# wechat = Wechat(autoreply=1)
-	wechat = Wechat(autoreply=1)
+	wechat = Wechat()
 
+	wechat.send_text_to_all_friends(message=u"""春节快乐""")
 
 	# 发送指定次数的消息给好友
 	# wechat.send_text_to_friend(u'haha', u'haha最帅', times=10, debug=1)
