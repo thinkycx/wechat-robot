@@ -6,7 +6,6 @@ Usage:
 	demo use for wxpy api
 """
 
-import os
 import time
 from wxpy import *
 
@@ -16,15 +15,11 @@ class Wechat():
 	微信类，封装了一些常用的需求
 	"""
 	__bot = ''            # Bot()
-	__log_path = './log'
 	__not_friends = []      # item: (remark_name，nickname)
 	__reply_once = []
 
 	def __init__(self, console_qr=True, cache=True,  autoreply=0):
 		self.__bot = Bot(console_qr=console_qr, cache_path=cache)  # cache_path 保存session信息到wxpy.pkl文件
-
-		if not os.path.exists(self.__log_path):
-			os.mkdir(self.__log_path)
 
 		# 自动接收响应好友请求，似乎不起作用
 		@self.__bot.register(msg_types=FRIENDS)
@@ -63,7 +58,7 @@ class Wechat():
 
 	def send_image(self, friend, filename):
 		"""
-		发送指定图片filename给friend。
+		发送指定图片给指定好友.
 		如果发送失败，存储(remark_name，nickname)到__not_friends中。如果发送成功，返回0。
 		:param friend:
 		:param filename:
@@ -102,7 +97,7 @@ class Wechat():
 
 	def send_to_file_helpder(self):
 		"""
-		发送检测出来的非好友信息给文件传输助手
+		发送检测出来的非好友信息给文件传输助手。
 		:return:
 		"""
 		info = u"您一共 %d 个好友，检测出%d 个好友已经把您删除。\n" % (len(self.__bot.friends()), len(self.__not_friends))
@@ -112,7 +107,7 @@ class Wechat():
 
 	def send_text_to_friend(self, name, message, times=1, nap=0.5, debug=0):
 		"""
-		发送消息给指定的人
+		发送消息给指定的人。
 		:param name: 要发送的人，模糊匹配，可以搜索nickname或者是备注
 		:param message: 消息内容
 		:param times: 发送次数
@@ -135,8 +130,8 @@ class Wechat():
 	def send_text_to_all_friends(self, message, snap=3):
 		"""
 		群发短信
-		:param message:
-		:param snap:
+		:param message: 信息内容
+		:param snap: 两条消息之间的间隔时间
 		:return:
 		"""
 		friends = self.__bot.friends()
@@ -147,15 +142,24 @@ class Wechat():
 				print(i), e ,"发送失败"
 			time.sleep(snap)
 
-	def scheduled_send(self, friend, time, message):
+	def scheduled_send(self, name, message, sendtime="2019-02-09 15:55:00"):
 		"""
-		定时发送消息给好友，如果收到回复发送邮件提醒。
-		:param friend:
-		:param time:
-		:param message:
+		定时发送消息给好友。
+		:param name: 好友备注
+		:param message: 消息内容
+		:param sendtime: 指定发送的时间
 		:return:
 		"""
-		pass
+		# 转换成时间数组
+		timeArray = time.strptime(sendtime, "%Y-%m-%d %H:%M:%S")
+		# 转换成时间戳
+		timestamp = time.mktime(timeArray)
+		while True:
+			if int(time.time()) >= timestamp:
+				self.send_text_to_friend(name, message)
+				logging.info("send success!")
+				return
+			time.sleep(10)
 
 
 def set_log():
@@ -165,9 +169,8 @@ def set_log():
 	logging.basicConfig(level=logging.INFO, format=log_format, datefmt=date_format)
 
 
-
 def detect_deleted_friends():
-	# 发送消息给每一个人，以此来检测谁把你删除了。
+	# 检测对方是否把你删除：发送消息给每一个人，以此来检测谁把你删除了。
 	wechat = Wechat()
 
 	wechat.sendall_image(debug=1)
@@ -178,10 +181,14 @@ if __name__ == '__main__':
 	set_log()
 
 	# 登陆
-	# wechat = Wechat(autoreply=1)
 	wechat = Wechat()
+	# wechat = Wechat(autoreply=1)
 
-	wechat.send_text_to_all_friends(message=u"""春节快乐""")
+	# 发送信息给所有好友
+	# wechat.send_text_to_all_friends(message=u"""春节快乐""")
+
+	# 定时发送
+	# wechat.scheduled_send("sun", "hello!", sendtime="2019-02-09 15:56:40")
 
 	# 发送指定次数的消息给好友
 	# wechat.send_text_to_friend(u'haha', u'haha最帅', times=10, debug=1)
